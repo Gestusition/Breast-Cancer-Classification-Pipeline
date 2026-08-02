@@ -184,8 +184,8 @@ En iyi model (Logistic Regression) için `GridSearchCV` uygulanmıştır:
 
 ## Önemli Öznitelikler (Logistic Regression Katsayı Yorumu)
 
-| Sıra | Öznitelik | |Katsayı| |
-|---|---|---|---|---|
+| Sıra | Öznitelik | Katsayı |
+|---|---|---|
 | 1 | num__mean concave points | 6.2993 |
 | 2 | num__worst concave points | 5.4623 |
 | 3 | num__worst radius | 5.2437 |
