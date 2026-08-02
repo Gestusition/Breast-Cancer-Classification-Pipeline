@@ -1,4 +1,4 @@
-# Göğüs Kanseri Sınıflandırması - HSD Makine Öğrenmesi Final Ödevi
+# Wisconsin Göğüs Kanseri Veri Seti ile Makine Öğrenmesi Sınıflandırması - HSD Makine Öğrenmesi Final Ödevi
 
 ## Projenin Amacı
 
