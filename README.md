@@ -1,4 +1,4 @@
-# Göğüs Kanseri Sınıflandırması - Uçtan Uca Makine Öğrenmesi Projesi
+# Göğüs Kanseri Sınıflandırması - HSD Makine Öğrenmesi Final Ödevi
 
 ## Projenin Amacı
 
