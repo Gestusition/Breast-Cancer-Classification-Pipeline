@@ -5,6 +5,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_is_fitted
 
 
 class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
@@ -18,26 +19,54 @@ class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
         self.source_column = source_column
         self.target_column = target_column
         self.n_bins = n_bins
-        self.bin_edges_ = None
-        self.labels_ = ["small", "medium", "large"]
 
     def fit(self, X, y=None):
-        values = np.asarray(X[self.source_column], dtype=float)
+        values = self._validated_source_values(X)
+        if self.n_bins != 3:
+            raise ValueError(
+                "RadiusCategoryTransformer yalnizca n_bins=3 degerini "
+                "destekler; kategoriler: small, medium, large."
+            )
+
+        usable_values = values[~np.isnan(values)]
         try:
-            _, bin_edges = pd.qcut(values, q=self.n_bins, retbins=True, duplicates="drop")
-        except (ValueError, IndexError):
-            _, bin_edges = pd.cut(values, bins=self.n_bins, retbins=True)
-        bin_edges = bin_edges.astype(float)
+            _, bin_edges = pd.qcut(
+                usable_values,
+                q=self.n_bins,
+                retbins=True,
+                duplicates="drop",
+            )
+            if len(bin_edges) != self.n_bins + 1:
+                _, bin_edges = pd.cut(
+                    usable_values,
+                    bins=self.n_bins,
+                    retbins=True,
+                )
+        except (ValueError, IndexError) as exc:
+            raise ValueError(
+                f"'{self.source_column}' sutunu icin kategori sinirlari "
+                "olusturulamadi."
+            ) from exc
+
+        bin_edges = np.asarray(bin_edges, dtype=float)
+        if len(bin_edges) != self.n_bins + 1 or np.any(np.diff(bin_edges) <= 0):
+            raise ValueError(
+                f"'{self.source_column}' sutunu icin {self.n_bins} gecerli "
+                "kategori araligi olusturulamadi."
+            )
         bin_edges[0] = -np.inf
         bin_edges[-1] = np.inf
         self.bin_edges_ = bin_edges
-        actual_bins = len(bin_edges) - 1
-        if actual_bins < self.n_bins:
-            self.labels_ = self.labels_[:actual_bins]
-        self._input_features_ = X.columns.tolist() if hasattr(X, "columns") else None
+        self.labels_ = ["small", "medium", "large"]
+        self._input_features_ = X.columns.tolist()
         return self
 
     def transform(self, X):
+        check_is_fitted(
+            self,
+            attributes=["bin_edges_", "labels_", "_input_features_"],
+        )
+        self._validated_source_values(X)
         X_copy = X.copy()
         X_copy[self.target_column] = pd.cut(
             X_copy[self.source_column],
@@ -45,6 +74,25 @@ class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
             labels=self.labels_,
         )
         return X_copy
+
+    def _validated_source_values(self, X):
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("RadiusCategoryTransformer girdisi bir pandas DataFrame olmalidir.")
+        if self.source_column not in X.columns:
+            raise ValueError(f"Kaynak sutun bulunamadi: '{self.source_column}'.")
+
+        source = X[self.source_column]
+        if not pd.api.types.is_numeric_dtype(source.dtype):
+            raise TypeError(f"'{self.source_column}' sutunu sayisal olmalidir.")
+
+        values = source.to_numpy(dtype=float, na_value=np.nan)
+        if np.isinf(values).any():
+            raise ValueError(f"'{self.source_column}' sutunu sonsuz deger iceremez.")
+        if np.isnan(values).all():
+            raise ValueError(
+                f"'{self.source_column}' sutunu en az bir kullanilabilir sayisal deger icermelidir."
+            )
+        return values
 
     def get_feature_names_out(self, input_features=None):
         if input_features is None:

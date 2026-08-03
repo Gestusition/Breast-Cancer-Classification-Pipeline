@@ -14,6 +14,65 @@ from sklearn.metrics import (
 from config import OUTPUTS_DIR
 
 
+def _positive_class_shap_values(shap_values, classifier):
+    """SHAP ciktisini pozitif sinif (1) icin iki boyutlu matrise indirger."""
+    try:
+        positive_class_index = list(classifier.classes_).index(1)
+    except (AttributeError, ValueError) as exc:
+        raise ValueError(
+            "SHAP icin classifier.classes_ icinde pozitif sinif 1 bulunamadi."
+        ) from exc
+
+    if isinstance(shap_values, list):
+        if positive_class_index >= len(shap_values):
+            raise ValueError(
+                "SHAP sinif listesi classifier.classes_ ile uyusmuyor: "
+                f"{len(shap_values)} cikti, sinif indeksi {positive_class_index}."
+            )
+        shap_values_to_plot = np.asarray(shap_values[positive_class_index])
+    else:
+        shap_array = np.asarray(shap_values)
+        if shap_array.ndim == 2:
+            shap_values_to_plot = shap_array
+        elif shap_array.ndim == 3:
+            if shap_array.shape[2] != len(classifier.classes_):
+                raise ValueError(
+                    "Uc boyutlu SHAP ciktisinin son ekseni sinif sayisi ile "
+                    f"uyusmuyor: {shap_array.shape}."
+                )
+            shap_values_to_plot = shap_array[:, :, positive_class_index]
+        else:
+            raise ValueError(f"Beklenmeyen SHAP cikti boyutu: {shap_array.shape}")
+
+    if shap_values_to_plot.ndim != 2:
+        raise ValueError(
+            "Pozitif sinif SHAP degerleri iki boyutlu olmaliydi; "
+            f"alinan boyut: {shap_values_to_plot.shape}."
+        )
+    return shap_values_to_plot
+
+
+def _save_shap_summary_plot(shap, shap_values, eval_sample, feature_names):
+    """summary_plot tarafindan olusturulan aktif figure'i kaydeder ve kapatir."""
+    shap.summary_plot(
+        shap_values,
+        eval_sample,
+        feature_names=feature_names,
+        show=False,
+    )
+    fig = plt.gcf()
+    try:
+        fig.set_size_inches(10, 8)
+        fig.tight_layout()
+        fig.savefig(
+            OUTPUTS_DIR / "shap_summary.png",
+            dpi=150,
+            bbox_inches="tight",
+        )
+    finally:
+        plt.close(fig)
+
+
 def evaluate_final_model(model, X_test, y_test, best_model_name):
     """Test seti uzerinde final modeli degerlendirir ve confusion matrix kaydeder."""
     print("\n" + "=" * 70)
@@ -150,31 +209,27 @@ def explain_model(model, X_train, X_test, y_test, best_model_name):
         elif best_model_name == "Random Forest":
             explainer = shap.TreeExplainer(best_clf)
             shap_values = explainer.shap_values(eval_sample)
-            if isinstance(shap_values, list):
-                shap_values_to_plot = shap_values[1]
-            else:
-                shap_values_to_plot = shap_values
-
-            fig, ax = plt.subplots(figsize=(10, 8))
-            shap.summary_plot(shap_values_to_plot, eval_sample,
-                              feature_names=selected_feature_names.tolist(),
-                              show=False)
-            fig.tight_layout()
-            fig.savefig(OUTPUTS_DIR / "shap_summary.png", dpi=150, bbox_inches="tight")
-            plt.close(fig)
+            shap_values_to_plot = _positive_class_shap_values(
+                shap_values,
+                best_clf,
+            )
+            _save_shap_summary_plot(
+                shap,
+                shap_values_to_plot,
+                eval_sample,
+                selected_feature_names.tolist(),
+            )
             shap_success = True
             print(f"\n'outputs/shap_summary.png' kaydedildi (SHAP TreeExplainer).")
         elif best_model_name == "Logistic Regression":
             explainer = shap.LinearExplainer(best_clf, background)
             shap_values = explainer.shap_values(eval_sample)
-
-            fig, ax = plt.subplots(figsize=(10, 8))
-            shap.summary_plot(shap_values, eval_sample,
-                              feature_names=selected_feature_names.tolist(),
-                              show=False)
-            fig.tight_layout()
-            fig.savefig(OUTPUTS_DIR / "shap_summary.png", dpi=150, bbox_inches="tight")
-            plt.close(fig)
+            _save_shap_summary_plot(
+                shap,
+                shap_values,
+                eval_sample,
+                selected_feature_names.tolist(),
+            )
             shap_success = True
             print(f"\n'outputs/shap_summary.png' kaydedildi (SHAP LinearExplainer).")
         else:
