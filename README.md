@@ -27,6 +27,20 @@ pip install -r requirements.txt
 python main.py
 ```
 
+### Doğrulanan Çalışma Ortamı
+
+Uçtan uca çalıştırma ve çıktılar aşağıdaki ortamda doğrulanmıştır. `requirements.txt` uyumluluk amacıyla sürüm aralıkları içerdiği için farklı sürümlerde çapraz doğrulama skorları küçük farklılıklar gösterebilir.
+
+| Bileşen | Sürüm |
+|---|---|
+| Python | 3.14.6 |
+| pandas | 2.3.3 |
+| numpy | 2.4.6 |
+| scikit-learn | 1.9.0 |
+| matplotlib | 3.11.1 |
+| seaborn | 0.13.2 |
+| shap | 0.52.0 |
+
 Script çalıştırıldığında sırasıyla şu adımlar gerçekleşir:
 1. Veri seti yüklenir, hedef kodlaması malignant=1 olacak şekilde çevrilir
 2. EDA yapılır (`outputs/class_distribution.png`)
@@ -45,9 +59,11 @@ Script çalıştırıldığında sırasıyla şu adımlar gerçekleşir:
 
 | Öznitelik | Formül | Açıklama |
 |---|---|---|
-| `radius_growth_ratio` | `worst radius / (mean radius + eps)` | Tümör çapındaki büyüme oranı; >1 kötüye gidişi gösterir |
-| `area_growth_ratio` | `worst area / (mean area + eps)` | Tümör alanındaki büyüme oranı |
-| `compactness_change` | `worst compactness - mean compactness` | Tümör şekil düzensizliğindeki değişim; pozitif tümörün kötüleştiğini gösterir |
+| `worst_to_mean_radius_ratio` | `worst radius / (mean radius + eps)` | Aynı örnekteki worst ve mean radius özet ölçümleri arasındaki göreli farkı temsil eder; zaman içindeki büyüme olarak yorumlanmaz |
+| `worst_to_mean_area_ratio` | `worst area / (mean area + eps)` | Aynı örnekteki worst ve mean area özet ölçümleri arasındaki göreli farkı temsil eder; zaman içindeki büyüme olarak yorumlanmaz |
+| `worst_minus_mean_compactness` | `worst compactness - mean compactness` | Aynı örnekteki worst ve mean compactness özet ölçümleri arasındaki farkı temsil eder |
+
+Buradaki `mean` ve `worst` değerleri tümörün farklı zamanlardaki ölçümleri değildir; aynı örnek için hesaplanmış özet istatistikleridir.
 
 ## Yapay Kategorik Değişken
 
@@ -137,9 +153,9 @@ Tüm bölme işlemlerinde `stratify` kullanılarak malignant/benign dağılımı
 | KNN | 0.9737 | 0.9762 | 0.9535 | 0.9647 | 0.9728 |
 | Random Forest | 0.9737 | 0.9762 | 0.9535 | 0.9647 | 0.9923 |
 
-Üç model de validation setinde aynı Accuracy, Precision, Recall ve F1-Score değerlerine ulaşmıştır. Tüm modellerin F1 ve Recall değerleri eşit olduğu için **Logistic Regression** (en basit ve yorumlanabilir model) seçilmiştir.
+Üç model de validation setinde aynı Accuracy, Precision, Recall ve F1-Score değerlerine ulaşmıştır. Eşitlik durumunda kullanılan açık model önceliği **Logistic Regression > KNN > Random Forest** şeklindedir; bu nedenle Logistic Regression seçilmiştir.
 
-Model seçim kriteri: malignant F1-Score, eşitlikte malignant Recall.
+Model seçim kriteri: malignant F1-Score, eşitlikte malignant Recall, yine eşitlikte açık model önceliği.
 
 ## Hiperparametre Ayarlama
 
@@ -147,7 +163,7 @@ En iyi model (Logistic Regression) için `GridSearchCV` uygulanmıştır:
 
 - **CV stratejisi:** `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)`
 - **Scoring:** `f1` (malignant F1-score)
-- **En iyi CV F1-score:** 0.9465
+- **En iyi CV F1-score:** 0.9724
 
 ### En İyi Parametreler
 
@@ -182,29 +198,29 @@ En iyi model (Logistic Regression) için `GridSearchCV` uygulanmıştır:
 | Benign (0) | 0.99 | 0.97 | 0.98 | 72 |
 | Malignant (1) | 0.95 | 0.98 | 0.96 | 42 |
 
-## Önemli Öznitelikler (Logistic Regression Katsayı Yorumu)
+## Önemli Öznitelikler (Logistic Regression Mutlak Katsayı Büyüklükleri)
 
-| Sıra | Öznitelik | Katsayı |
+| Sıra | Öznitelik | Mutlak katsayı büyüklüğü |
 |---|---|---|
-| 1 | num__mean concave points | 6.2993 |
-| 2 | num__worst concave points | 5.4623 |
-| 3 | num__worst radius | 5.2437 |
-| 4 | num__worst concavity | 4.2598 |
-| 5 | num__worst perimeter | 4.0407 |
-| 6 | num__worst area | 3.1383 |
-| 7 | num__mean compactness | 2.8649 |
-| 8 | num__mean concavity | 2.8464 |
-| 9 | num__mean radius | 2.7537 |
-| 10 | cat__radius_category_large | 1.9949 |
+| 1 | num__worst radius | 13.0803 |
+| 2 | num__mean concave points | 9.4186 |
+| 3 | num__worst_to_mean_area_ratio | 7.0708 |
+| 4 | num__area error | 6.9708 |
+| 5 | num__worst_to_mean_radius_ratio | 6.1277 |
+| 6 | num__worst concavity | 3.9796 |
+| 7 | num__mean compactness | 3.9161 |
+| 8 | num__mean area | 3.0456 |
+| 9 | num__mean concavity | 2.8029 |
+| 10 | num__mean radius | 2.7394 |
 
-En önemli öznitelikler tümör şekil düzensizliği (concave points, concavity), tümör boyutu (radius, perimeter, area) ve üretilen kategorik değişken (radius_category) ile ilişkilidir. Katsayı büyüklükleri, ilgili öznitelikteki bir birimlik artışın malignant olma log-odds'una etkisini gösterir.
+En önemli öznitelikler tümör şekil düzensizliği (concave points, concavity), tümör boyutu (radius, area) ve üretilen özet özelliklerle ilişkilidir. Değerler, standartlaştırılmış özelliklerin mutlak katsayı büyüklükleridir. Katsayının yönü gösterilmediği için yalnızca göreli önem hakkında bilgi verir; değerler orijinal ölçüm biriminde bir birimlik artışın malignant olma log-odds'una etkisi olarak yorumlanmamalıdır.
 
 ## Model Sınırlılıkları
 
 1. **Küçük veri seti:** 569 örnek, daha büyük ve çeşitli verilerde genelleme performansı farklı olabilir
 2. **Eğitim amaçlıdır:** Bu model gerçek tıbbi teşhis aracı olarak KULLANILAMAZ
 3. **Aykırı değer sınırlandırması:** Kanserli örneklerdeki yüksek değerler gerçek biyolojik sinyal olabilir; capping dikkatli yorumlanmalıdır
-4. **False negative riski:** Test setinde 3 malignant vaka gözden kaçırılmıştır (recall = %92.86). Tıbbi uygulamalarda her bir false negative hayati risk taşır
+4. **False negative riski:** Test setinde 1 malignant vaka gözden kaçırılmıştır (recall = %97.62); 42 malignant örneğin 41'i doğru sınıflandırılmıştır. Tıbbi uygulamalarda her bir false negative hayati risk taşır
 
 ## outputs/ Klasöründeki Dosyalar
 
@@ -215,12 +231,12 @@ En önemli öznitelikler tümör şekil düzensizliği (concave points, concavit
 | `model_comparison.csv` | Validation karşılaştırma sonuçları tablosu |
 | `confusion_matrix.png` | Test confusion matrix görselleştirmesi |
 | `feature_importance.png` | En önemli 20 öznitelik (yatay bar grafik) |
-| `shap_summary.png` | SHAP beeswarm plot (TreeExplainer) |
+| `shap_summary.png` | Seçilen modele göre SHAP açıklanabilirlik grafiği; Logistic Regression için `LinearExplainer` kullanılmıştır |
 
 ## Sonuç Yorumu
 
-Logistic Regression, validation setinde en yüksek F1-skoru ve Recall ile seçilmiştir. Test setinde %97.37 accuracy ve %97.62 malignant recall elde edilmiştir. 42 malignant test örneğinden 41'i doğru tespit edilmiş, yalnızca 1 false negative vaka gözden kaçırılmıştır. Bu durum, modelin malignant vakaları yakalamada oldukça başarılı olduğunu göstermektedir. Ayrıca yalnızca 2 false positive vaka bulunmaktadır (precision: %95.35).
+Logistic Regression, validation setindeki eşit F1 ve Recall sonuçlarında uygulanan açık model önceliği nedeniyle seçilmiştir. Test setinde %97.37 accuracy ve %97.62 malignant recall elde edilmiştir. 42 malignant test örneğinden 41'i doğru tespit edilmiş, yalnızca 1 false negative vaka gözden kaçırılmıştır. Bu durum, modelin malignant vakaları yakalamada oldukça başarılı olduğunu göstermektedir. Ayrıca yalnızca 2 false positive vaka bulunmaktadır (precision: %95.35).
 
 Tümör concave points (çukur noktaları), tümör boyutu (radius, perimeter, area) ve concavity en yüksek katsayı büyüklüğüne sahip özniteliklerdir. Üretilen `radius_category_large` kategorik değişkeni de ilk 10 içinde yer alarak öznitelik mühendisliğinin katkısını göstermiştir.
 
-Logistic Regression'ın en önemli avantajı, katsayılarının doğrudan yorumlanabilir olmasıdır. SHAP LinearExplainer ile yapılan açıklanabilirlik analizi, katsayı yorumlarını desteklemektedir.
+Logistic Regression'ın en önemli avantajı, katsayılarının göreli önem açısından yorumlanabilir olmasıdır. SHAP `LinearExplainer` ile yapılan açıklanabilirlik analizi, bu yorumu desteklemektedir.

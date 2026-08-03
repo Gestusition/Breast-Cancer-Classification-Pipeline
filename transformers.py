@@ -67,6 +67,8 @@ class OutlierCapper(BaseEstimator, TransformerMixin):
         self.upper_bounds_ = {}
 
     def fit(self, X, y=None):
+        self.lower_bounds_ = {}
+        self.upper_bounds_ = {}
         for col in X.columns:
             q1 = float(X[col].quantile(0.25))
             q3 = float(X[col].quantile(0.75))

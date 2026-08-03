@@ -49,7 +49,7 @@ def main():
         pipelines, X_train, y_train, X_val, y_val
     )
 
-    grid_search, best_params = tune_hyperparameters(
+    _, best_params = tune_hyperparameters(
         best_model_name, X_train, y_train
     )
 
@@ -57,7 +57,7 @@ def main():
         best_model_name, best_params, X_train, X_val, y_train, y_val
     )
 
-    test_metrics, cm = evaluate_final_model(
+    test_metrics, _ = evaluate_final_model(
         final_model, X_test, y_test, best_model_name
     )
 

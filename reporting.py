@@ -11,7 +11,10 @@ def print_result_summary(best_model_name, validation_df, test_metrics, best_para
     print("18. SONUC YORUMU")
     print("=" * 70)
 
-    best_val = validation_df.iloc[0]
+    matching_rows = validation_df.loc[validation_df["Model"] == best_model_name]
+    if matching_rows.empty:
+        raise ValueError(f"Validation tablosunda secilen model bulunamadi: {best_model_name}")
+    best_val = matching_rows.iloc[0]
 
     print(f"""
 OZET DEGERLENDIRME
@@ -44,7 +47,8 @@ En Iyi Hiperparametreler:
 YORUM
 -----
 1. Model Secimi: {best_model_name}, validation setinde en yuksek malignant F1
-   skorunu elde ettigi icin secilmistir.
+   skorunu elde ettigi icin; esitlikte recall, sonra da acik model onceligi
+   kullanilarak secilmistir.
 
 2. Malignant Recall: Gercek kotu huylu tumorlerin ne kadarini dogru tespit
    ettigimizi gosterir. Tibbi uygulamalarda kritiktir.

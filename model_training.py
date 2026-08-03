@@ -20,16 +20,23 @@ from transformers import RadiusCategoryTransformer
 from preprocessing import build_scaled_preprocessor, build_unscaled_preprocessor
 
 
+MODEL_TIE_BREAK_PRIORITY = {
+    "Logistic Regression": 0,
+    "KNN": 1,
+    "Random Forest": 2,
+}
+
+
 def compare_models(pipelines, X_train, y_train, X_val, y_val):
     """Tum modelleri egitir ve validation setinde karsilastirir.
-    Secim metrigi: malignant F1-score, esitlikte recall.
+    Secim metrigi: malignant F1-score, esitlikte recall ve acik tie-break.
     """
     print("\n" + "=" * 70)
     print("10-11. MODEL EGITIMI VE VALIDATION KARSILASTIRMASI")
     print("=" * 70)
 
     results = []
-    best_score_tuple = (-1.0, -1.0)
+    best_score_tuple = (-1.0, -1.0, float("-inf"))
     best_model_name = None
 
     for name, pipeline in pipelines.items():
@@ -64,7 +71,8 @@ def compare_models(pipelines, X_train, y_train, X_val, y_val):
             "ROC-AUC": round(roc_auc, 4),
         })
 
-        score = (f1, rec)
+        tie_break_priority = MODEL_TIE_BREAK_PRIORITY.get(name, len(pipelines))
+        score = (f1, rec, -tie_break_priority)
         if score > best_score_tuple:
             best_score_tuple = score
             best_model_name = name
@@ -81,7 +89,10 @@ def compare_models(pipelines, X_train, y_train, X_val, y_val):
     csv_path = OUTPUTS_DIR / "model_comparison.csv"
     results_df.to_csv(csv_path, index=False)
     print(f"\n'outputs/model_comparison.csv' olarak kaydedildi.")
-    print(f"\nEn iyi model: {best_model_name} (F1-Score: {best_score_tuple[0]:.4f})")
+    print(
+        f"\nEn iyi model: {best_model_name} "
+        f"(F1-Score: {best_score_tuple[0]:.4f})"
+    )
 
     return results_df, best_model_name
 
@@ -162,7 +173,6 @@ def train_final_model(best_model_name, best_params, X_train, X_val, y_train, y_v
     print("14. FINAL MODEL EGITIMI (Train + Validation)")
     print("=" * 70)
 
-    import pandas as pd
     X_train_final = pd.concat([X_train, X_val], ignore_index=True)
     y_train_final = pd.concat([y_train, y_val], ignore_index=True)
 

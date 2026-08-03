@@ -98,13 +98,23 @@ def explain_model(model, X_train, y_train, X_test, y_test, best_model_name):
         else:
             from sklearn.inspection import permutation_importance
             perm_result = permutation_importance(
-                model, X_test, y_test, n_repeats=5, random_state=42, scoring="f1"
+                model.named_steps["classifier"],
+                X_test_selected,
+                y_test,
+                n_repeats=5,
+                random_state=42,
+                scoring="f1",
             )
             importances = perm_result.importances_mean
     except Exception:
         from sklearn.inspection import permutation_importance
         perm_result = permutation_importance(
-            model, X_test, y_test, n_repeats=5, random_state=42, scoring="f1"
+            model.named_steps["classifier"],
+            X_test_selected,
+            y_test,
+            n_repeats=5,
+            random_state=42,
+            scoring="f1",
         )
         importances = perm_result.importances_mean
 

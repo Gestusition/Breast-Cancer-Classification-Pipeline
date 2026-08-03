@@ -38,9 +38,12 @@ def inject_missing_values(df):
 
 def engineer_features(df):
     """Anlamli yeni oznitelikler uretir:
-      - radius_growth_ratio: worst radius / mean radius
-      - area_growth_ratio: worst area / mean area
-      - compactness_change: worst compactness - mean compactness
+      - worst_to_mean_radius_ratio: worst radius / mean radius
+      - worst_to_mean_area_ratio: worst area / mean area
+      - worst_minus_mean_compactness: worst compactness - mean compactness
+
+    ``mean`` ve ``worst`` degerleri ayni ornegin ozet olcumleridir; zamansal
+    olarak art arda alinmis olcumler gibi yorumlanmamalidir.
     """
     print("\n" + "=" * 70)
     print("6. OZNITELIK MUHENDISLIGI")
@@ -49,14 +52,16 @@ def engineer_features(df):
     eps = 1e-10
     df_fe = df.copy()
 
-    df_fe["radius_growth_ratio"] = df_fe["worst radius"] / (df_fe["mean radius"] + eps)
-    print("  + radius_growth_ratio = worst radius / mean radius")
+    df_fe["worst_to_mean_radius_ratio"] = df_fe["worst radius"] / (df_fe["mean radius"] + eps)
+    print("  + worst_to_mean_radius_ratio = worst radius / mean radius")
 
-    df_fe["area_growth_ratio"] = df_fe["worst area"] / (df_fe["mean area"] + eps)
-    print("  + area_growth_ratio = worst area / mean area")
+    df_fe["worst_to_mean_area_ratio"] = df_fe["worst area"] / (df_fe["mean area"] + eps)
+    print("  + worst_to_mean_area_ratio = worst area / mean area")
 
-    df_fe["compactness_change"] = df_fe["worst compactness"] - df_fe["mean compactness"]
-    print("  + compactness_change = worst compactness - mean compactness")
+    df_fe["worst_minus_mean_compactness"] = (
+        df_fe["worst compactness"] - df_fe["mean compactness"]
+    )
+    print("  + worst_minus_mean_compactness = worst compactness - mean compactness")
 
     print(f"\nOznitelik muhendisligi sonrasi veri seti: {df_fe.shape[1]} sutun")
     return df_fe
