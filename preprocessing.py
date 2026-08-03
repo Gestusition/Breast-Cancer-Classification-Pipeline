@@ -3,7 +3,6 @@
 """
 
 import numpy as np
-import pandas as pd
 
 from sklearn.base import clone
 from sklearn.compose import ColumnTransformer, make_column_selector
@@ -94,7 +93,7 @@ def build_unscaled_preprocessor():
 def create_model_pipelines():
     """Tum modeller icin sklearn Pipeline'lari olusturur."""
     print("\n" + "=" * 70)
-    print("9. PIPELINE INSASI")
+    print("10. PIPELINE INSASI")
     print("=" * 70)
 
     scaled_preprocessor = build_scaled_preprocessor()

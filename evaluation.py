@@ -24,7 +24,7 @@ def evaluate_final_model(model, X_test, y_test, best_model_name):
     try:
         y_proba = model.predict_proba(X_test)[:, 1]
         roc_auc = roc_auc_score(y_test, y_proba)
-    except Exception:
+    except (AttributeError, IndexError, ValueError):
         roc_auc = float("nan")
 
     acc = accuracy_score(y_test, y_pred)
@@ -68,7 +68,7 @@ def evaluate_final_model(model, X_test, y_test, best_model_name):
     return metrics, cm
 
 
-def explain_model(model, X_train, y_train, X_test, y_test, best_model_name):
+def explain_model(model, X_train, X_test, y_test, best_model_name):
     """Feature importance ve SHAP analizi."""
     print("\n" + "=" * 70)
     print("16-17. ACIKLANABILIRLIK ANALIZI (Bonus)")
@@ -80,7 +80,7 @@ def explain_model(model, X_train, y_train, X_test, y_test, best_model_name):
 
     try:
         all_feature_names = model.named_steps["preprocessor"].get_feature_names_out()
-    except Exception:
+    except (AttributeError, ValueError):
         all_feature_names = np.array([f"feature_{i}" for i in range(X_train_processed.shape[1])])
 
     selected_feature_names = np.array(all_feature_names)[selector_mask]
@@ -89,27 +89,15 @@ def explain_model(model, X_train, y_train, X_test, y_test, best_model_name):
     X_test_processed = model.named_steps["preprocessor"].transform(X_test_processed)
     X_test_selected = X_test_processed.iloc[:, selector_mask]
 
-    try:
-        if hasattr(model.named_steps["classifier"], "feature_importances_"):
-            importances = model.named_steps["classifier"].feature_importances_
-        elif hasattr(model.named_steps["classifier"], "coef_"):
-            coef = model.named_steps["classifier"].coef_
-            importances = np.abs(coef).flatten()
-        else:
-            from sklearn.inspection import permutation_importance
-            perm_result = permutation_importance(
-                model.named_steps["classifier"],
-                X_test_selected,
-                y_test,
-                n_repeats=5,
-                random_state=42,
-                scoring="f1",
-            )
-            importances = perm_result.importances_mean
-    except Exception:
+    classifier = model.named_steps["classifier"]
+    if hasattr(classifier, "feature_importances_"):
+        importances = classifier.feature_importances_
+    elif hasattr(classifier, "coef_"):
+        importances = np.abs(classifier.coef_).flatten()
+    else:
         from sklearn.inspection import permutation_importance
         perm_result = permutation_importance(
-            model.named_steps["classifier"],
+            classifier,
             X_test_selected,
             y_test,
             n_repeats=5,
@@ -121,7 +109,10 @@ def explain_model(model, X_train, y_train, X_test, y_test, best_model_name):
     n_features = len(selected_feature_names)
     importances = np.array(importances)
     if len(importances) != n_features:
-        importances = importances[:n_features]
+        raise ValueError(
+            "Importance sayisi ile secilen oz nitelik sayisi eslesmiyor: "
+            f"{len(importances)} != {n_features}"
+        )
 
     sorted_idx = np.argsort(importances)[::-1]
     top_n = min(20, n_features)
@@ -189,10 +180,15 @@ def explain_model(model, X_train, y_train, X_test, y_test, best_model_name):
         else:
             from sklearn.inspection import permutation_importance as perm_imp
             perm_result = perm_imp(
-                model, X_test, y_test, n_repeats=10, random_state=42, scoring="f1"
+                classifier,
+                X_test_selected,
+                y_test,
+                n_repeats=10,
+                random_state=42,
+                scoring="f1",
             )
             print("\nSHAP basarisiz; permutation importance kullanildi.")
-    except Exception as e:
+    except (ImportError, AttributeError, TypeError, ValueError, RuntimeError) as e:
         print(f"\nSHAP analizi basarisiz oldu: {e}")
 
     shap_path = OUTPUTS_DIR / "shap_summary.png"

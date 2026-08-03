@@ -83,7 +83,7 @@ def report_outliers(df):
 def save_correlation_heatmap(X_train, y_train):
     """En guclu korelasyonlara sahip ozniteliklerin isi haritasini kaydeder."""
     print("\n" + "=" * 70)
-    print("12. KORELASYON ANALIZI")
+    print("9. KORELASYON ANALIZI")
     print("=" * 70)
 
     df_corr = X_train.copy()

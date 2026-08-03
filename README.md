@@ -237,6 +237,6 @@ En önemli öznitelikler tümör şekil düzensizliği (concave points, concavit
 
 Logistic Regression, validation setindeki eşit F1 ve Recall sonuçlarında uygulanan açık model önceliği nedeniyle seçilmiştir. Test setinde %97.37 accuracy ve %97.62 malignant recall elde edilmiştir. 42 malignant test örneğinden 41'i doğru tespit edilmiş, yalnızca 1 false negative vaka gözden kaçırılmıştır. Bu durum, modelin malignant vakaları yakalamada oldukça başarılı olduğunu göstermektedir. Ayrıca yalnızca 2 false positive vaka bulunmaktadır (precision: %95.35).
 
-Tümör concave points (çukur noktaları), tümör boyutu (radius, perimeter, area) ve concavity en yüksek katsayı büyüklüğüne sahip özniteliklerdir. Üretilen `radius_category_large` kategorik değişkeni de ilk 10 içinde yer alarak öznitelik mühendisliğinin katkısını göstermiştir.
+Tümör concave points (çukur noktaları), tümör boyutu (radius, perimeter, area) ve concavity en yüksek katsayı büyüklüğüne sahip özniteliklerdir. Üretilen `radius_category_large` kategorik değişkeni de ilk 20 özellik arasında yer almıştır.
 
 Logistic Regression'ın en önemli avantajı, katsayılarının göreli önem açısından yorumlanabilir olmasıdır. SHAP `LinearExplainer` ile yapılan açıklanabilirlik analizi, bu yorumu desteklemektedir.

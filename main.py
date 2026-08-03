@@ -61,7 +61,7 @@ def main():
         final_model, X_test, y_test, best_model_name
     )
 
-    explain_model(final_model, X_train, y_train, X_test, y_test, best_model_name)
+    explain_model(final_model, X_train, X_test, y_test, best_model_name)
     print_result_summary(best_model_name, validation_df, test_metrics, best_params)
 
 

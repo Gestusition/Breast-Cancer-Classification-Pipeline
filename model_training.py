@@ -32,7 +32,7 @@ def compare_models(pipelines, X_train, y_train, X_val, y_val):
     Secim metrigi: malignant F1-score, esitlikte recall ve acik tie-break.
     """
     print("\n" + "=" * 70)
-    print("10-11. MODEL EGITIMI VE VALIDATION KARSILASTIRMASI")
+    print("11-12. MODEL EGITIMI VE VALIDATION KARSILASTIRMASI")
     print("=" * 70)
 
     results = []
@@ -47,7 +47,7 @@ def compare_models(pipelines, X_train, y_train, X_val, y_val):
         try:
             y_proba = pipe.predict_proba(X_val)[:, 1]
             roc_auc = roc_auc_score(y_val, y_proba)
-        except Exception:
+        except (AttributeError, IndexError, ValueError):
             roc_auc = float("nan")
 
         acc = accuracy_score(y_val, y_pred)
