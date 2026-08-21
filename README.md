@@ -241,3 +241,8 @@ Logistic Regression was chosen based on validation performance and model simplic
 Concave points, tumor radius, area, and engineered ratio features (`worst_to_mean_area_ratio`, `worst_to_mean_radius_ratio`) are among the most influential predictors. The synthetic `radius_category_large` feature also ranked among the top 20 predictors.
 
 A key advantage of Logistic Regression is direct interpretability through its coefficients and compatibility with SHAP `LinearExplainer`, enabling clear insight into the model's decision boundaries.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](file:///c:/Users/kirac/Desktop/Machine%20Learning%20final%20%C3%B6dev/LICENSE) file for details.
+
