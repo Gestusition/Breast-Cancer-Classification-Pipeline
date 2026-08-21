@@ -1,4 +1,4 @@
-"""SHAP cikti normalizasyonu ve grafik uretimi regresyon testleri."""
+"""SHAP output normalization and plot generation regression tests."""
 
 import tempfile
 import unittest
@@ -60,7 +60,7 @@ class ShapValueSelectionTest(unittest.TestCase):
         self.assertIs(selected, values)
 
     def test_rejects_unexpected_shap_dimensions(self):
-        with self.assertRaisesRegex(ValueError, "Beklenmeyen SHAP cikti boyutu"):
+        with self.assertRaisesRegex(ValueError, "Unexpected SHAP output dimension"):
             _positive_class_shap_values(
                 np.zeros((2, 2, 2, 2)),
                 _ClassifierWithReversedClasses(),

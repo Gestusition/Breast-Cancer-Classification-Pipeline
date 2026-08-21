@@ -1,5 +1,5 @@
 """
-Ön İşleme ve Pipeline Oluşturma
+Preprocessing and Pipeline Construction
 """
 
 import numpy as np
@@ -19,9 +19,9 @@ from transformers import RadiusCategoryTransformer, OutlierCapper
 
 
 def split_data(df):
-    """Veriyi stratified olarak %60 train, %20 validation, %20 test seklinde boler."""
+    """Splits data into stratified 60% train, 20% validation, and 20% test sets."""
     print("\n" + "=" * 70)
-    print("8. TRAIN / VALIDATION / TEST BOLME (Stratified)")
+    print("8. TRAIN / VALIDATION / TEST SPLIT (Stratified)")
     print("=" * 70)
 
     X = df.drop(columns=["target"])
@@ -35,13 +35,13 @@ def split_data(df):
     )
 
     n = len(df)
-    print(f"Train seti:      {X_train.shape[0]} satir ({X_train.shape[0]/n*100:.0f}%)")
-    print(f"Validation seti: {X_val.shape[0]} satir ({X_val.shape[0]/n*100:.0f}%)")
-    print(f"Test seti:       {X_test.shape[0]} satir ({X_test.shape[0]/n*100:.0f}%)")
+    print(f"Train set:      {X_train.shape[0]} rows ({X_train.shape[0]/n*100:.0f}%)")
+    print(f"Validation set: {X_val.shape[0]} rows ({X_val.shape[0]/n*100:.0f}%)")
+    print(f"Test set:       {X_test.shape[0]} rows ({X_test.shape[0]/n*100:.0f}%)")
 
-    print(f"\nTrain      malignant orani: {y_train.mean():.2%}")
-    print(f"Validation malignant orani: {y_val.mean():.2%}")
-    print(f"Test       malignant orani: {y_test.mean():.2%}")
+    print(f"\nTrain      malignant ratio: {y_train.mean():.2%}")
+    print(f"Validation malignant ratio: {y_val.mean():.2%}")
+    print(f"Test       malignant ratio: {y_test.mean():.2%}")
 
     X_train = X_train.reset_index(drop=True)
     X_val = X_val.reset_index(drop=True)
@@ -54,7 +54,7 @@ def split_data(df):
 
 
 def build_scaled_preprocessor():
-    """LR ve KNN icin: SimpleImputer(median) -> OutlierCapper -> StandardScaler + OHE."""
+    """For LR and KNN: SimpleImputer(median) -> OutlierCapper -> StandardScaler + OHE."""
     num_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("outlier_capper", OutlierCapper(factor=1.5)),
@@ -73,7 +73,7 @@ def build_scaled_preprocessor():
 
 
 def build_unscaled_preprocessor():
-    """Random Forest icin: SimpleImputer(median) -> OutlierCapper + OHE (scaler yok)."""
+    """For Random Forest: SimpleImputer(median) -> OutlierCapper + OHE (no scaler)."""
     num_pipeline = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("outlier_capper", OutlierCapper(factor=1.5)),
@@ -91,9 +91,9 @@ def build_unscaled_preprocessor():
 
 
 def create_model_pipelines():
-    """Tum modeller icin sklearn Pipeline'lari olusturur."""
+    """Creates scikit-learn Pipelines for all models."""
     print("\n" + "=" * 70)
-    print("10. PIPELINE INSASI")
+    print("10. PIPELINE CONSTRUCTION")
     print("=" * 70)
 
     scaled_preprocessor = build_scaled_preprocessor()

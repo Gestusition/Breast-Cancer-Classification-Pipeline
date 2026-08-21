@@ -1,4 +1,4 @@
-"""RadiusCategoryTransformer yasam dongusu regresyon testleri."""
+"""RadiusCategoryTransformer lifecycle regression tests."""
 
 import unittest
 
@@ -50,26 +50,26 @@ class RadiusCategoryTransformerTest(unittest.TestCase):
         valid = pd.DataFrame({"mean radius": [1.0, 2.0, 3.0]})
         missing = pd.DataFrame({"other": [1.0, 2.0, 3.0]})
 
-        with self.assertRaisesRegex(ValueError, "Kaynak sutun bulunamadi"):
+        with self.assertRaisesRegex(ValueError, "Source column not found"):
             transformer.fit(missing)
 
         transformer.fit(valid)
-        with self.assertRaisesRegex(ValueError, "Kaynak sutun bulunamadi"):
+        with self.assertRaisesRegex(ValueError, "Source column not found"):
             transformer.transform(missing)
 
     def test_unsupported_n_bins_raises_clear_error(self):
         data = pd.DataFrame({"mean radius": [1.0, 2.0, 3.0, 4.0]})
 
-        with self.assertRaisesRegex(ValueError, "yalnizca n_bins=3"):
+        with self.assertRaisesRegex(ValueError, "only supports n_bins=3"):
             RadiusCategoryTransformer(n_bins=4).fit(data)
 
     def test_requires_dataframe_and_usable_numeric_source(self):
         transformer = RadiusCategoryTransformer()
         with self.assertRaisesRegex(TypeError, "pandas DataFrame"):
             transformer.fit(np.array([[1.0], [2.0]]))
-        with self.assertRaisesRegex(TypeError, "sayisal olmalidir"):
+        with self.assertRaisesRegex(TypeError, "must be numeric"):
             transformer.fit(pd.DataFrame({"mean radius": ["1", "2"]}))
-        with self.assertRaisesRegex(ValueError, "kullanilabilir sayisal"):
+        with self.assertRaisesRegex(ValueError, "must contain at least one usable numeric"):
             transformer.fit(pd.DataFrame({"mean radius": [np.nan, np.nan]}))
 
     def test_sklearn_clone_preserves_only_constructor_parameters(self):

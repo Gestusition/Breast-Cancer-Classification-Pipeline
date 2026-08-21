@@ -1,19 +1,19 @@
 """
-Uctan Uca Makine Ogrenmesi Projesi - Gogus Kanseri Siniflandirmasi
+End-to-End Machine Learning Project - Breast Cancer Classification
 ==================================================================
 
-Amac:
-    Breast Cancer Wisconsin veri seti uzerinde uctan uca bir makine
-    ogrenmesi akisi uygular: EDA, on isleme, oznitelik muhendisligi,
-    model egitimi, karsilastirma, hiperparametre ayarlama ve yorumlama.
+Purpose:
+    Executes an end-to-end machine learning pipeline on the Breast Cancer
+    Wisconsin dataset: EDA, preprocessing, feature engineering, model training,
+    model comparison, hyperparameter tuning, evaluation, and explainability.
 
-Kullanilan Kutuphaneler:
-    - pandas, numpy: Veri isleme
-    - scikit-learn: On isleme, model egitimi, degerlendirme
-    - matplotlib, seaborn: Gorsellestirme
-    - shap: Model aciklanabilirligi
+Libraries Used:
+    - pandas, numpy: Data manipulation
+    - scikit-learn: Preprocessing, model training, evaluation
+    - matplotlib, seaborn: Visualization
+    - shap: Model explainability
 
-Calistirma:
+Execution:
     1. pip install -r requirements.txt
     2. python main.py
 """
@@ -30,9 +30,9 @@ from reporting import print_result_summary
 
 
 def main():
-    """Uctan uca makine ogrenmesi akisini calistirir."""
+    """Runs the end-to-end machine learning workflow."""
     print("=" * 70)
-    print("  GOGUS KANSERI SINIFLANDIRMASI - UCTAN UCA ML PROJESI")
+    print("  BREAST CANCER CLASSIFICATION - END-TO-END ML PROJECT")
     print("=" * 70)
 
     df = load_and_prepare_data()

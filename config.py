@@ -1,5 +1,5 @@
 """
-Proje Yapılandırması ve Ortak Ayarlar
+Project Configuration and Shared Settings
 """
 
 import warnings

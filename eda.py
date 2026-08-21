@@ -1,5 +1,5 @@
 """
-Keşifsel Veri Analizi (EDA)
+Exploratory Data Analysis (EDA)
 """
 
 import numpy as np
@@ -11,52 +11,52 @@ from config import OUTPUTS_DIR
 
 
 def perform_eda(df):
-    """Veri setinin temel incelemesini yapar ve gorsellestirme kaydeder."""
+    """Performs basic data exploration and saves visualizations."""
     print("\n" + "=" * 70)
-    print("3-5. TEMEL VERI INCELEME (EDA)")
+    print("3-5. BASIC DATA EXPLORATION (EDA)")
     print("=" * 70)
 
-    print(f"\nVeri seti boyutu: {df.shape[0]} satir, {df.shape[1]} sutun")
-    print(f"\nIlk 5 satir:")
+    print(f"\nDataset shape: {df.shape[0]} rows, {df.shape[1]} columns")
+    print(f"\nFirst 5 rows:")
     print(df.head(5))
 
-    print(f"\nVeri tipleri:")
+    print(f"\nData types:")
     print(df.dtypes.value_counts().to_string())
 
-    print(f"\nTemel istatistikler (ilk 10 oznitelik):")
+    print(f"\nSummary statistics (first 10 features):")
     print(df.describe().iloc[:, :10].round(3))
 
     target_counts = df["target"].value_counts()
-    print(f"\nHedef degisken (target) dagilimi:")
+    print(f"\nTarget variable distribution:")
     print(f"  1 (malignant): {target_counts[1]} ({target_counts[1]/len(df)*100:.1f}%)")
     print(f"  0 (benign):    {target_counts[0]} ({target_counts[0]/len(df)*100:.1f}%)")
 
     fig, ax = plt.subplots(figsize=(6, 4))
     bars = ax.bar(["Benign (0)", "Malignant (1)"], [target_counts[0], target_counts[1]],
                    color=["#2ecc71", "#e74c3c"])
-    ax.set_title("Hedef Degisken Sinif Dagilimi")
-    ax.set_ylabel("Ornek Sayisi")
+    ax.set_title("Target Variable Class Distribution")
+    ax.set_ylabel("Sample Count")
     for bar, val in zip(bars, [target_counts[0], target_counts[1]]):
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1, str(val),
                 ha="center", fontweight="bold")
     fig.tight_layout()
     fig.savefig(OUTPUTS_DIR / "class_distribution.png", dpi=150)
     plt.close(fig)
-    print(f"\n'outputs/class_distribution.png' kaydedildi.")
+    print(f"\n'outputs/class_distribution.png' saved.")
 
     print("\n" + "-" * 50)
-    print("Eksik Deger Kontrolu (orijinal veri seti):")
+    print("Missing Value Check (original dataset):")
     missing_total = df.isnull().sum().sum()
-    print(f"  Toplam eksik deger: {missing_total}")
-    print("  Orijinal veri setinde eksik deger bulunmamaktadir.")
+    print(f"  Total missing values: {missing_total}")
+    print("  No missing values found in original dataset.")
 
 
 def report_outliers(df):
-    """IQR yontemiyle her sayisal oznitelikteki aykiri deger sayisini raporlar."""
+    """Reports outlier counts in each numerical feature using IQR method."""
     print("\n" + "=" * 70)
-    print("7. AYKIRI DEGER INCELEMESI (Betimsel EDA)")
+    print("7. OUTLIER ANALYSIS (Descriptive EDA)")
     print("=" * 70)
-    print("NOT: Capping sinirlari yalnizca train verisinden ogrenilecektir.")
+    print("NOTE: Capping bounds will be learned strictly from training data.")
 
     feature_cols = [c for c in df.columns if c != "target"]
     outlier_counts = {}
@@ -72,18 +72,18 @@ def report_outliers(df):
 
     if outlier_counts:
         outlier_df = pd.DataFrame(
-            {"Aykiri Deger Sayisi": outlier_counts}
-        ).sort_values("Aykiri Deger Sayisi", ascending=False)
-        print(f"\nAykiri deger bulunan sutunlar (toplam {len(outlier_counts)} sutun):")
+            {"Outlier Count": outlier_counts}
+        ).sort_values("Outlier Count", ascending=False)
+        print(f"\nColumns with outliers (total {len(outlier_counts)} columns):")
         print(outlier_df.head(15).to_string())
     else:
-        print("\nHicbir sutunda aykiri deger bulunamadi.")
+        print("\nNo outliers found in any column.")
 
 
 def save_correlation_heatmap(X_train, y_train):
-    """En guclu korelasyonlara sahip ozniteliklerin isi haritasini kaydeder."""
+    """Saves a heatmap of features with the strongest correlations."""
     print("\n" + "=" * 70)
-    print("9. KORELASYON ANALIZI")
+    print("9. CORRELATION ANALYSIS")
     print("=" * 70)
 
     df_corr = X_train.copy()
@@ -99,12 +99,12 @@ def save_correlation_heatmap(X_train, y_train):
     sns.heatmap(top_corr, mask=mask, annot=True, fmt=".2f", cmap="RdBu_r",
                 center=0, square=True, linewidths=0.5,
                 xticklabels=True, yticklabels=True, ax=ax)
-    ax.set_title("En Yuksek Korelasyonlu 20 Oznitelik Arasindaki Korelasyon Isi Haritasi",
+    ax.set_title("Correlation Heatmap of Top 20 Correlated Features",
                  fontsize=13, fontweight="bold")
     fig.tight_layout()
     fig.savefig(OUTPUTS_DIR / "correlation_heatmap.png", dpi=150)
     plt.close(fig)
-    print(f"'outputs/correlation_heatmap.png' kaydedildi.")
+    print(f"'outputs/correlation_heatmap.png' saved.")
 
-    print(f"\nHedef ile en yuksek korelasyona sahip 10 oznitelik:")
+    print(f"\nTop 10 features most correlated with target:")
     print(target_corr.head(10).to_string())

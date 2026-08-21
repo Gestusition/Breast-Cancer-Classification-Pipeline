@@ -1,37 +1,38 @@
-# Wisconsin Göğüs Kanseri Veri Seti ile Makine Öğrenmesi Sınıflandırması - HSD Makine Öğrenmesi Final Ödevi
+# Breast Cancer Wisconsin Machine Learning Classification - Machine Learning Final Project
 
-## Projenin Amacı
+## Project Purpose
 
-Bu proje, **Breast Cancer Wisconsin** veri seti üzerinde uçtan uca bir makine öğrenmesi akışı uygular. Amaç; veri inceleme (EDA), veri ön işleme, öznitelik mühendisliği, model eğitimi, model karşılaştırma, çapraz doğrulama, hiperparametre ayarlama ve sonuç yorumlama adımlarını temiz ve anlaşılır bir Python projesi olarak tamamlamaktır.
+This project implements an end-to-end machine learning pipeline on the **Breast Cancer Wisconsin** dataset. The objective is to perform exploratory data analysis (EDA), data preprocessing, feature engineering, model training, model comparison, cross-validation, hyperparameter tuning, model evaluation, and result interpretation within a clean, robust, and well-structured Python project.
 
-**Önemli Uyarı:** Bu model yalnızca eğitim amaçlıdır. Gerçek tıbbi teşhis aracı olarak KULLANILAMAZ.
+> [!IMPORTANT]
+> **Important Note:** This model is strictly for educational purposes. It CANNOT be used as a clinical diagnostic tool.
 
-## Veri Seti
+## Dataset
 
-- **Kaynak:** `sklearn.datasets.load_breast_cancer`
-- **Örnek sayısı:** 569
-- **Orijinal öznitelik sayısı:** 30 (tümü sayısal)
-- **Hedef kodlaması:** `1 = malignant` (kötü huylu), `0 = benign` (iyi huylu)
-- **Sınıf dağılımı:** Malignant %37.3 (212), Benign %62.7 (357)
+- **Source:** `sklearn.datasets.load_breast_cancer`
+- **Number of samples:** 569
+- **Number of original features:** 30 (all numerical)
+- **Target encoding:** `1 = malignant`, `0 = benign`
+- **Class distribution:** Malignant 37.3% (212), Benign 62.7% (357)
 
-### Orijinal Öznitelikler
+### Original Features
 
-30 sayısal öznitelik; her biri tümör hücre çekirdeklerinin 10 farklı karakteristiği üzerinden hesaplanmış **mean**, **standard error** ve **worst** değerleridir:
+30 numerical features computed from digitized images of fine needle aspirates (FNA) of breast masses, describing characteristics of the cell nuclei present in the image across **mean**, **standard error**, and **worst** values:
 
 `mean radius`, `mean texture`, `mean perimeter`, `mean area`, `mean smoothness`, `mean compactness`, `mean concavity`, `mean concave points`, `mean symmetry`, `mean fractal dimension`, `radius error`, `texture error`, `perimeter error`, `area error`, `smoothness error`, `compactness error`, `concavity error`, `concave points error`, `symmetry error`, `fractal dimension error`, `worst radius`, `worst texture`, `worst perimeter`, `worst area`, `worst smoothness`, `worst compactness`, `worst concavity`, `worst concave points`, `worst symmetry`, `worst fractal dimension`
 
-## Kurulum ve Çalıştırma
+## Installation and Execution
 
 ```bash
 pip install -r requirements.txt
 python main.py
 ```
 
-### Doğrulanan Çalışma Ortamı
+### Verified Runtime Environment
 
-Uçtan uca çalıştırma ve çıktılar aşağıdaki ortamda doğrulanmıştır. `requirements.txt` uyumluluk amacıyla sürüm aralıkları içerdiği için farklı sürümlerde çapraz doğrulama skorları küçük farklılıklar gösterebilir.
+End-to-end execution and outputs have been verified in the following environment. Since `requirements.txt` contains version ranges for broad compatibility, cross-validation scores may vary slightly across different library versions.
 
-| Bileşen | Sürüm |
+| Component | Version |
 |---|---|
 | Python | 3.14.6 |
 | pandas | 2.3.3 |
@@ -41,44 +42,44 @@ Uçtan uca çalıştırma ve çıktılar aşağıdaki ortamda doğrulanmıştır
 | seaborn | 0.13.2 |
 | shap | 0.52.0 |
 
-Script çalıştırıldığında sırasıyla şu adımlar gerçekleşir:
-1. Veri seti yüklenir, hedef kodlaması malignant=1 olacak şekilde çevrilir
-2. EDA yapılır (`outputs/class_distribution.png`)
-3. Imputation'ı göstermek amacıyla ~%1 yapay eksik değer enjekte edilir
-4. Öznitelik mühendisliği (3 yeni öznitelik)
-5. Aykırı değer raporlaması (betimsel)
-6. Stratified train/validation/test bölme (%60/%20/%20)
-7. Korelasyon ısı haritası (`outputs/correlation_heatmap.png`)
-8. Pipeline + 3 model eğitimi ve validation karşılaştırması
-9. GridSearchCV ile hiperparametre ayarlama
-10. Final modelin train+validation ile eğitimi ve test değerlendirmesi
-11. Açıklanabilirlik (feature importance + SHAP)
-12. Sonuç yorumu
+When executed, the pipeline performs the following steps sequentially:
+1. Load dataset, remap target encoding to malignant=1, benign=0
+2. Perform EDA (`outputs/class_distribution.png`)
+3. Inject ~1% synthetic missing values to demonstrate imputation
+4. Feature engineering (3 new features)
+5. Outlier analysis & reporting (descriptive)
+6. Stratified train/validation/test split (60% / 20% / 20%)
+7. Correlation heatmap (`outputs/correlation_heatmap.png`)
+8. Pipelines + 3 model training & validation comparison
+9. Hyperparameter tuning using GridSearchCV
+10. Final model training on train+validation and evaluation on test set
+11. Model explainability (feature importance + SHAP)
+12. Results summary and clinical interpretation
 
-## Üretilen Yeni Öznitelikler
+## Engineered Features
 
-| Öznitelik | Formül | Açıklama |
+| Feature | Formula | Description |
 |---|---|---|
-| `worst_to_mean_radius_ratio` | `worst radius / (mean radius + eps)` | Aynı örnekteki worst ve mean radius özet ölçümleri arasındaki göreli farkı temsil eder; zaman içindeki büyüme olarak yorumlanmaz |
-| `worst_to_mean_area_ratio` | `worst area / (mean area + eps)` | Aynı örnekteki worst ve mean area özet ölçümleri arasındaki göreli farkı temsil eder; zaman içindeki büyüme olarak yorumlanmaz |
-| `worst_minus_mean_compactness` | `worst compactness - mean compactness` | Aynı örnekteki worst ve mean compactness özet ölçümleri arasındaki farkı temsil eder |
+| `worst_to_mean_radius_ratio` | `worst radius / (mean radius + eps)` | Represents the relative difference between worst and mean radius summary metrics for the same sample; not a temporal growth rate |
+| `worst_to_mean_area_ratio` | `worst area / (mean area + eps)` | Represents the relative difference between worst and mean area summary metrics for the same sample; not a temporal growth rate |
+| `worst_minus_mean_compactness` | `worst compactness - mean compactness` | Represents the difference between worst and mean compactness summary metrics for the same sample |
 
-Buradaki `mean` ve `worst` değerleri tümörün farklı zamanlardaki ölçümleri değildir; aynı örnek için hesaplanmış özet istatistikleridir.
+Note: `mean` and `worst` metrics are not observations taken at different points in time; they are summary statistics computed for each FNA sample.
 
-## Yapay Kategorik Değişken
+## Synthetic Categorical Feature
 
-Kategorik encoding adımını göstermek amacıyla **öğrenme amaçlı** bir yapay kategorik değişken oluşturulmuştur:
+To demonstrate categorical preprocessing and encoding pipelines for educational purposes, a synthetic categorical feature is created:
 
-- `radius_category`: `mean radius` özniteliğinin quantile tabanlı üç sınıfa (small / medium / large) ayrılması
-- Bu işlem `RadiusCategoryTransformer` adlı özel sklearn transformer'ı ile pipeline içinde gerçekleşir
-- Bin sınırları yalnızca train verisinden öğrenilir, validation/test verilerine yalnızca uygulanır
-- `OneHotEncoder` ile sayısal forma dönüştürülür
+- `radius_category`: Quantile-based 3-bin discretization of the `mean radius` feature (`small` / `medium` / `large`).
+- Handled via custom scikit-learn transformer `RadiusCategoryTransformer` inside the pipeline.
+- Bin edges are strictly fitted on the training set and applied to validation/test sets to prevent data leakage.
+- Converted into one-hot numeric representation via `OneHotEncoder`.
 
-## Yapay Eksik Değer Enjeksiyonu
+## Synthetic Missing Value Injection
 
-Orijinal veri setinde eksik değer BULUNMAMAKTADIR. Imputation işlemini göstermek amacıyla rastgele seçilen 5 sayısal sütuna sabit `random_state=42` ile ~%1 oranında (her sütunda 5 adet) yapay eksik değer eklenmiştir:
+The original dataset has NO missing values. To demonstrate imputation pipelines, ~1% synthetic missing values (5 values per column) are injected into 5 randomly selected numerical columns using a fixed `random_state=42`:
 
-| Sütun | Eksik Sayısı |
+| Column | Missing Count |
 |---|---|
 | mean perimeter | 5 |
 | perimeter error | 5 |
@@ -86,18 +87,18 @@ Orijinal veri setinde eksik değer BULUNMAMAKTADIR. Imputation işlemini göster
 | worst radius | 5 |
 | worst fractal dimension | 5 |
 
-Eksik değerler pipeline içinde `SimpleImputer(strategy="median")` ile yalnızca train verisine fit edilerek doldurulur.
+Missing values are handled inside the pipeline via `SimpleImputer(strategy="median")` fitted solely on the training data.
 
-## Preprocessing Adımları
+## Preprocessing Steps
 
-Tüm ön işleme adımları sklearn `Pipeline` ve `ColumnTransformer` içinde yürütülmüştür. **Data leakage engellenmiştir**:
-- Imputer, OutlierCapper, StandardScaler ve OneHotEncoder yalnızca train verisine **fit** edilir
-- Validation ve test verilerine yalnızca **transform** uygulanır
-- GridSearchCV her fold'da preprocessing'i fold'un train verisiyle yeniden fit eder
+All preprocessing steps are encapsulated in scikit-learn `Pipeline` and `ColumnTransformer` objects. **Data leakage is strictly prevented**:
+- Imputer, OutlierCapper, StandardScaler, and OneHotEncoder are **fitted only** on the training partition.
+- Validation and test sets are exclusively **transformed**.
+- GridSearchCV refits preprocessing pipelines per training fold.
 
-### Pipeline Yapısı
+### Pipeline Structure
 
-**Logistic Regression ve KNN:**
+**Logistic Regression and KNN:**
 ```
 RadiusCategoryTransformer
   -> ColumnTransformer[
@@ -119,33 +120,33 @@ RadiusCategoryTransformer
   -> RandomForestClassifier
 ```
 
-Random Forest ölçekleme gerektirmediği için numeric boruda StandardScaler bulunmaz.
+Random Forest does not require numerical feature scaling, so `StandardScaler` is omitted from its numeric branch.
 
-### Aykırı Değer İşleme
+### Outlier Handling
 
-- EDA aşamasında tüm veri setinde IQR yöntemiyle aykırı değer sayıları raporlanır (betimsel)
-- Capping sınırları (`OutlierCapper`) yalnızca train verisinden öğrenilir
-- IQR çarpanı: 1.5
+- During EDA, outliers across all numerical columns are reported using the IQR method (descriptive).
+- Capping bounds (`OutlierCapper`) are learned strictly on the training set.
+- IQR factor: 1.5.
 
-## Train-Validation-Test Oranları
+## Train-Validation-Test Split Ratios
 
-| Küme | Satır Sayısı | Oran |
+| Partition | Row Count | Ratio |
 |---|---|---|
-| Train | 341 | %60 |
-| Validation | 114 | %20 |
-| Test | 114 | %20 |
+| Train | 341 | 60% |
+| Validation | 114 | 20% |
+| Test | 114 | 20% |
 
-Tüm bölme işlemlerinde `stratify` kullanılarak malignant/benign dağılımı korunmuştur.
+All splits use `stratify=y` to preserve the positive (malignant) class proportion across subsets.
 
-## Karşılaştırılan Modeller
+## Compared Models
 
-Üç farklı sınıflandırma modeli eğitilmiştir:
+Three classification algorithms are trained and evaluated:
 
 1. **Logistic Regression** (`max_iter=3000`, L2 regularization)
-2. **KNN** (`n_neighbors=5`)
+2. **K-Nearest Neighbors (KNN)** (`n_neighbors=5`)
 3. **Random Forest** (`n_estimators=100`)
 
-## Validation Sonuçları
+## Validation Results
 
 | Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC |
 |---|---|---|---|---|---|
@@ -153,30 +154,30 @@ Tüm bölme işlemlerinde `stratify` kullanılarak malignant/benign dağılımı
 | KNN | 0.9737 | 0.9762 | 0.9535 | 0.9647 | 0.9728 |
 | Random Forest | 0.9737 | 0.9762 | 0.9535 | 0.9647 | 0.9923 |
 
-Üç model de validation setinde aynı Accuracy, Precision, Recall ve F1-Score değerlerine ulaşmıştır. Eşitlik durumunda kullanılan açık model önceliği **Logistic Regression > KNN > Random Forest** şeklindedir; bu nedenle Logistic Regression seçilmiştir.
+All three models achieved identical Accuracy, Precision, Recall, and F1-Score on the validation set. In the case of a tie, the predefined model priority order **Logistic Regression > KNN > Random Forest** was used, selecting Logistic Regression.
 
-Model seçim kriteri: malignant F1-Score, eşitlikte malignant Recall, yine eşitlikte açık model önceliği.
+Model selection criteria: Malignant F1-Score, tie-break on malignant Recall, secondary tie-break on explicit model priority.
 
-## Hiperparametre Ayarlama
+## Hyperparameter Tuning
 
-En iyi model (Logistic Regression) için `GridSearchCV` uygulanmıştır:
+`GridSearchCV` was applied to the best model (Logistic Regression):
 
-- **CV stratejisi:** `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)`
+- **CV Strategy:** `StratifiedKFold(n_splits=5, shuffle=True, random_state=42)`
 - **Scoring:** `f1` (malignant F1-score)
-- **En iyi CV F1-score:** 0.9724
+- **Best CV F1-Score:** 0.9724
 
-### En İyi Parametreler
+### Best Hyperparameters
 
-| Parametre | Değer |
+| Parameter | Value |
 |---|---|
 | `classifier__C` | 100 |
 | `classifier__penalty` | l2 |
 | `classifier__solver` | lbfgs |
 | `selector__k` | 25 |
 
-## Test Sonuçları (Seçilen Model: Logistic Regression)
+## Test Results (Selected Model: Logistic Regression)
 
-| Metrik | Değer |
+| Metric | Value |
 |---|---|
 | Accuracy | 0.9737 |
 | Precision | 0.9535 |
@@ -184,23 +185,23 @@ En iyi model (Logistic Regression) için `GridSearchCV` uygulanmıştır:
 | F1-Score | 0.9647 |
 | ROC-AUC | 0.9954 |
 
-### Confusion Matrix (Test)
+### Confusion Matrix (Test Set)
 
-| | Tahmin: Benign | Tahmin: Malignant |
+| | Predicted: Benign | Predicted: Malignant |
 |---|---|---|
-| **Gerçek: Benign** | 70 | 2 |
-| **Gerçek: Malignant** | 1 | 41 |
+| **Actual: Benign** | 70 | 2 |
+| **Actual: Malignant** | 1 | 41 |
 
 ### Classification Report
 
-| Sınıf | Precision | Recall | F1-Score | Support |
+| Class | Precision | Recall | F1-Score | Support |
 |---|---|---|---|---|
 | Benign (0) | 0.99 | 0.97 | 0.98 | 72 |
 | Malignant (1) | 0.95 | 0.98 | 0.96 | 42 |
 
-## Önemli Öznitelikler (Logistic Regression Mutlak Katsayı Büyüklükleri)
+## Key Features (Logistic Regression Absolute Coefficient Magnitudes)
 
-| Sıra | Öznitelik | Mutlak katsayı büyüklüğü |
+| Rank | Feature | Absolute Coefficient Magnitude |
 |---|---|---|
 | 1 | num__worst radius | 13.0803 |
 | 2 | num__mean concave points | 9.4186 |
@@ -213,30 +214,30 @@ En iyi model (Logistic Regression) için `GridSearchCV` uygulanmıştır:
 | 9 | num__mean concavity | 2.8029 |
 | 10 | num__mean radius | 2.7394 |
 
-En önemli öznitelikler tümör şekil düzensizliği (concave points, concavity), tümör boyutu (radius, area) ve üretilen özet özelliklerle ilişkilidir. Değerler, standartlaştırılmış özelliklerin mutlak katsayı büyüklükleridir. Katsayının yönü gösterilmediği için yalnızca göreli önem hakkında bilgi verir; değerler orijinal ölçüm biriminde bir birimlik artışın malignant olma log-odds'una etkisi olarak yorumlanmamalıdır.
+The most important features are strongly associated with tumor shape irregularity (concave points, concavity), tumor size (radius, area), and engineered ratio features. Values represent absolute coefficient magnitudes of standardized features, providing relative ranking of feature importance.
 
-## Model Sınırlılıkları
+## Model Limitations
 
-1. **Küçük veri seti:** 569 örnek, daha büyük ve çeşitli verilerde genelleme performansı farklı olabilir
-2. **Eğitim amaçlıdır:** Bu model gerçek tıbbi teşhis aracı olarak KULLANILAMAZ
-3. **Aykırı değer sınırlandırması:** Kanserli örneklerdeki yüksek değerler gerçek biyolojik sinyal olabilir; capping dikkatli yorumlanmalıdır
-4. **False negative riski:** Test setinde 1 malignant vaka gözden kaçırılmıştır (recall = %97.62); 42 malignant örneğin 41'i doğru sınıflandırılmıştır. Tıbbi uygulamalarda her bir false negative hayati risk taşır
+1. **Small Dataset Size:** 569 samples; generalization performance should be validated on larger external clinical cohorts.
+2. **Educational Purpose:** This model is designed for educational demonstration and MUST NOT be used for real clinical medical diagnostics.
+3. **Outlier Capping:** High biomarker values in malignant cases may represent genuine pathological signals; outlier capping must be interpreted cautiously.
+4. **False Negative Risk:** 1 malignant case was misclassified as benign in the test set (Recall = 97.62%, 41 out of 42 malignant cases detected). In real medical diagnostics, every false negative carries significant clinical risk.
 
-## outputs/ Klasöründeki Dosyalar
+## Files in outputs/ Directory
 
-| Dosya | Açıklama |
+| File | Description |
 |---|---|
-| `class_distribution.png` | Hedef sınıf dağılımı bar grafiği |
-| `correlation_heatmap.png` | En yüksek korelasyonlu 20 öznitelik ısı haritası |
-| `model_comparison.csv` | Validation karşılaştırma sonuçları tablosu |
-| `confusion_matrix.png` | Test confusion matrix görselleştirmesi |
-| `feature_importance.png` | En önemli 20 öznitelik (yatay bar grafik) |
-| `shap_summary.png` | Seçilen modele göre SHAP açıklanabilirlik grafiği; Logistic Regression için `LinearExplainer` kullanılmıştır |
+| `class_distribution.png` | Target class distribution bar chart |
+| `correlation_heatmap.png` | Top 20 correlated features heatmap |
+| `model_comparison.csv` | Validation comparison results table |
+| `confusion_matrix.png` | Test confusion matrix visualization |
+| `feature_importance.png` | Top 20 most important features horizontal bar chart |
+| `shap_summary.png` | SHAP explainability summary plot (LinearExplainer for Logistic Regression) |
 
-## Sonuç Yorumu
+## Conclusion and Interpretation
 
-Logistic Regression, validation setindeki eşit F1 ve Recall sonuçlarında uygulanan açık model önceliği nedeniyle seçilmiştir. Test setinde %97.37 accuracy ve %97.62 malignant recall elde edilmiştir. 42 malignant test örneğinden 41'i doğru tespit edilmiş, yalnızca 1 false negative vaka gözden kaçırılmıştır. Bu durum, modelin malignant vakaları yakalamada oldukça başarılı olduğunu göstermektedir. Ayrıca yalnızca 2 false positive vaka bulunmaktadır (precision: %95.35).
+Logistic Regression was chosen based on validation performance and model simplicity. On the independent test set, it achieved **97.37% Accuracy**, **97.62% Malignant Recall**, and **0.9954 ROC-AUC**. Out of 42 malignant cases, 41 were correctly identified with only 1 false negative and 2 false positives (Precision: 95.35%).
 
-Tümör concave points (çukur noktaları), tümör boyutu (radius, perimeter, area) ve concavity en yüksek katsayı büyüklüğüne sahip özniteliklerdir. Üretilen `radius_category_large` kategorik değişkeni de ilk 20 özellik arasında yer almıştır.
+Concave points, tumor radius, area, and engineered ratio features (`worst_to_mean_area_ratio`, `worst_to_mean_radius_ratio`) are among the most influential predictors. The synthetic `radius_category_large` feature also ranked among the top 20 predictors.
 
-Logistic Regression'ın en önemli avantajı, katsayılarının göreli önem açısından yorumlanabilir olmasıdır. SHAP `LinearExplainer` ile yapılan açıklanabilirlik analizi, bu yorumu desteklemektedir.
+A key advantage of Logistic Regression is direct interpretability through its coefficients and compatibility with SHAP `LinearExplainer`, enabling clear insight into the model's decision boundaries.

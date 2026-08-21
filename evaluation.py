@@ -1,5 +1,5 @@
 """
-Model Değerlendirmesi ve Açıklanabilirlik
+Model Evaluation and Explainability
 """
 
 import numpy as np
@@ -15,19 +15,19 @@ from config import OUTPUTS_DIR
 
 
 def _positive_class_shap_values(shap_values, classifier):
-    """SHAP ciktisini pozitif sinif (1) icin iki boyutlu matrise indirger."""
+    """Reduces SHAP output to a 2D matrix for the positive class (1)."""
     try:
         positive_class_index = list(classifier.classes_).index(1)
     except (AttributeError, ValueError) as exc:
         raise ValueError(
-            "SHAP icin classifier.classes_ icinde pozitif sinif 1 bulunamadi."
+            "Positive class 1 not found in classifier.classes_ for SHAP."
         ) from exc
 
     if isinstance(shap_values, list):
         if positive_class_index >= len(shap_values):
             raise ValueError(
-                "SHAP sinif listesi classifier.classes_ ile uyusmuyor: "
-                f"{len(shap_values)} cikti, sinif indeksi {positive_class_index}."
+                "SHAP class list does not match classifier.classes_: "
+                f"{len(shap_values)} outputs, class index {positive_class_index}."
             )
         shap_values_to_plot = np.asarray(shap_values[positive_class_index])
     else:
@@ -37,23 +37,23 @@ def _positive_class_shap_values(shap_values, classifier):
         elif shap_array.ndim == 3:
             if shap_array.shape[2] != len(classifier.classes_):
                 raise ValueError(
-                    "Uc boyutlu SHAP ciktisinin son ekseni sinif sayisi ile "
-                    f"uyusmuyor: {shap_array.shape}."
+                    "Last axis of 3D SHAP output does not match number of classes: "
+                    f"{shap_array.shape}."
                 )
             shap_values_to_plot = shap_array[:, :, positive_class_index]
         else:
-            raise ValueError(f"Beklenmeyen SHAP cikti boyutu: {shap_array.shape}")
+            raise ValueError(f"Unexpected SHAP output dimension: {shap_array.shape}")
 
     if shap_values_to_plot.ndim != 2:
         raise ValueError(
-            "Pozitif sinif SHAP degerleri iki boyutlu olmaliydi; "
-            f"alinan boyut: {shap_values_to_plot.shape}."
+            "Positive class SHAP values must be 2-dimensional; "
+            f"received shape: {shap_values_to_plot.shape}."
         )
     return shap_values_to_plot
 
 
 def _save_shap_summary_plot(shap, shap_values, eval_sample, feature_names):
-    """summary_plot tarafindan olusturulan aktif figure'i kaydeder ve kapatir."""
+    """Saves and closes the active figure created by summary_plot."""
     shap.summary_plot(
         shap_values,
         eval_sample,
@@ -74,9 +74,9 @@ def _save_shap_summary_plot(shap, shap_values, eval_sample, feature_names):
 
 
 def evaluate_final_model(model, X_test, y_test, best_model_name):
-    """Test seti uzerinde final modeli degerlendirir ve confusion matrix kaydeder."""
+    """Evaluates the final model on the test set and saves the confusion matrix."""
     print("\n" + "=" * 70)
-    print("15. TEST DEGERLENDIRMESI")
+    print("15. TEST EVALUATION")
     print("=" * 70)
 
     y_pred = model.predict(X_test)
@@ -92,7 +92,7 @@ def evaluate_final_model(model, X_test, y_test, best_model_name):
     f1 = f1_score(y_test, y_pred, pos_label=1, zero_division=0)
     cm = confusion_matrix(y_test, y_pred)
 
-    print(f"\nTest Performans Metrikleri (pozitif sinif = malignant):")
+    print(f"\nTest Performance Metrics (positive class = malignant):")
     print(f"  Accuracy:  {acc:.4f}")
     print(f"  Precision: {prec:.4f}")
     print(f"  Recall:    {rec:.4f}")
@@ -100,9 +100,9 @@ def evaluate_final_model(model, X_test, y_test, best_model_name):
     print(f"  ROC-AUC:   {roc_auc:.4f}")
 
     print(f"\nConfusion Matrix:")
-    print(f"                   Tahmin: Benign  Tahmin: Malignant")
-    print(f"  Gercek: Benign       {cm[0, 0]:^13}  {cm[0, 1]:^17}")
-    print(f"  Gercek: Malignant    {cm[1, 0]:^13}  {cm[1, 1]:^17}")
+    print(f"                   Predicted: Benign  Predicted: Malignant")
+    print(f"  Actual: Benign       {cm[0, 0]:^13}  {cm[0, 1]:^17}")
+    print(f"  Actual: Malignant    {cm[1, 0]:^13}  {cm[1, 1]:^17}")
 
     print(f"\nClassification Report:")
     print(classification_report(y_test, y_pred,
@@ -112,13 +112,13 @@ def evaluate_final_model(model, X_test, y_test, best_model_name):
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
                 xticklabels=["Benign", "Malignant"],
                 yticklabels=["Benign", "Malignant"], ax=ax)
-    ax.set_xlabel("Tahmin Edilen")
-    ax.set_ylabel("Gercek Deger")
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
     ax.set_title(f"Confusion Matrix - {best_model_name}")
     fig.tight_layout()
     fig.savefig(OUTPUTS_DIR / "confusion_matrix.png", dpi=150)
     plt.close(fig)
-    print(f"\n'outputs/confusion_matrix.png' kaydedildi.")
+    print(f"\n'outputs/confusion_matrix.png' saved.")
 
     metrics = {
         "accuracy": acc, "precision": prec, "recall": rec,
@@ -128,9 +128,9 @@ def evaluate_final_model(model, X_test, y_test, best_model_name):
 
 
 def explain_model(model, X_train, X_test, y_test, best_model_name):
-    """Feature importance ve SHAP analizi."""
+    """Feature importance and SHAP analysis."""
     print("\n" + "=" * 70)
-    print("16-17. ACIKLANABILIRLIK ANALIZI (Bonus)")
+    print("16-17. EXPLAINABILITY ANALYSIS (Bonus)")
     print("=" * 70)
 
     X_train_processed = model.named_steps["add_categories"].transform(X_train)
@@ -169,14 +169,14 @@ def explain_model(model, X_train, X_test, y_test, best_model_name):
     importances = np.array(importances)
     if len(importances) != n_features:
         raise ValueError(
-            "Importance sayisi ile secilen oz nitelik sayisi eslesmiyor: "
+            "Number of feature importances does not match number of selected features: "
             f"{len(importances)} != {n_features}"
         )
 
     sorted_idx = np.argsort(importances)[::-1]
     top_n = min(20, n_features)
 
-    print(f"\nEn onemli {top_n} oznitelik:")
+    print(f"\nTop {top_n} most important features:")
     for i in range(top_n):
         idx = sorted_idx[i]
         print(f"  {i+1:2d}. {selected_feature_names[idx]:40s}  {importances[idx]:.6f}")
@@ -188,12 +188,12 @@ def explain_model(model, X_train, X_test, y_test, best_model_name):
     ax.barh(range(top_n), top_importances[::-1], color=colors[::-1])
     ax.set_yticks(range(top_n))
     ax.set_yticklabels(top_features[::-1], fontsize=8)
-    ax.set_xlabel("Onem Degeri")
-    ax.set_title(f"En Onemli {top_n} Oznitelik - {best_model_name}", fontweight="bold")
+    ax.set_xlabel("Importance Score")
+    ax.set_title(f"Top {top_n} Most Important Features - {best_model_name}", fontweight="bold")
     fig.tight_layout()
     fig.savefig(OUTPUTS_DIR / "feature_importance.png", dpi=150)
     plt.close(fig)
-    print(f"\n'outputs/feature_importance.png' kaydedildi.")
+    print(f"\n'outputs/feature_importance.png' saved.")
 
     shap_success = False
     try:
@@ -205,7 +205,7 @@ def explain_model(model, X_train, X_test, y_test, best_model_name):
         best_clf = model.named_steps["classifier"]
 
         if best_model_name == "KNN":
-            print("\nSHAP: KNN icin KernelExplainer cok yavas; atlaniyor.")
+            print("\nSHAP: KernelExplainer is too slow for KNN; skipping.")
         elif best_model_name == "Random Forest":
             explainer = shap.TreeExplainer(best_clf)
             shap_values = explainer.shap_values(eval_sample)
@@ -220,7 +220,7 @@ def explain_model(model, X_train, X_test, y_test, best_model_name):
                 selected_feature_names.tolist(),
             )
             shap_success = True
-            print(f"\n'outputs/shap_summary.png' kaydedildi (SHAP TreeExplainer).")
+            print(f"\n'outputs/shap_summary.png' saved (SHAP TreeExplainer).")
         elif best_model_name == "Logistic Regression":
             explainer = shap.LinearExplainer(best_clf, background)
             shap_values = explainer.shap_values(eval_sample)
@@ -231,7 +231,7 @@ def explain_model(model, X_train, X_test, y_test, best_model_name):
                 selected_feature_names.tolist(),
             )
             shap_success = True
-            print(f"\n'outputs/shap_summary.png' kaydedildi (SHAP LinearExplainer).")
+            print(f"\n'outputs/shap_summary.png' saved (SHAP LinearExplainer).")
         else:
             from sklearn.inspection import permutation_importance as perm_imp
             perm_result = perm_imp(
@@ -242,14 +242,14 @@ def explain_model(model, X_train, X_test, y_test, best_model_name):
                 random_state=42,
                 scoring="f1",
             )
-            print("\nSHAP basarisiz; permutation importance kullanildi.")
+            print("\nSHAP failed; permutation importance used.")
     except (ImportError, AttributeError, TypeError, ValueError, RuntimeError) as e:
-        print(f"\nSHAP analizi basarisiz oldu: {e}")
+        print(f"\nSHAP analysis failed: {e}")
 
     shap_path = OUTPUTS_DIR / "shap_summary.png"
     if not shap_success and shap_path.exists():
         shap_path.unlink()
     if not shap_success:
-        print("shap_summary.png olusturulmadi.")
+        print("shap_summary.png was not generated.")
 
     return selected_feature_names, importances

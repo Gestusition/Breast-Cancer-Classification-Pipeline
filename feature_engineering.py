@@ -1,16 +1,16 @@
 """
-Öznitelik Mühendisliği
+Feature Engineering
 """
 
 import numpy as np
 
 
 def inject_missing_values(df):
-    """Imputation islemini gostermek amaciyla sayisal ozniteliklere ~%1
-    oraninda yapay eksik deger ekler. Target sutununa dokunulmaz.
+    """Injects ~1% synthetic missing values into numerical features to
+    demonstrate imputation. Target column is untouched.
     """
     print("\n" + "=" * 70)
-    print("5b. YAPAY EKSIK DEGER ENJEKSIYONU (Imputation Gostermek Icin)")
+    print("5b. SYNTHETIC MISSING VALUE INJECTION (To Demonstrate Imputation)")
     print("=" * 70)
 
     feature_cols = [c for c in df.columns if c != "target"]
@@ -24,28 +24,28 @@ def inject_missing_values(df):
         idx = rng.choice(n_rows, size=n_missing, replace=False)
         df_missing.loc[idx, col] = np.nan
 
-    print(f"Enjeksiyon yapilan sutunlar: {list(cols_to_inject)}")
-    print(f"Her sutuna eklenen eksik deger sayisi: {n_missing} (~%1)")
+    print(f"Injected columns: {list(cols_to_inject)}")
+    print(f"Missing values added per column: {n_missing} (~1%)")
 
     missing_after = df_missing.isnull().sum()
     missing_after_nonzero = missing_after[missing_after > 0]
-    print(f"\nEnjeksiyon sonrasi eksik degerler:")
+    print(f"\nMissing values after injection:")
     print(missing_after_nonzero.to_string())
 
     return df_missing
 
 
 def engineer_features(df):
-    """Anlamli yeni oznitelikler uretir:
+    """Generates meaningful new features:
       - worst_to_mean_radius_ratio: worst radius / mean radius
       - worst_to_mean_area_ratio: worst area / mean area
       - worst_minus_mean_compactness: worst compactness - mean compactness
 
-    ``mean`` ve ``worst`` degerleri ayni ornegin ozet olcumleridir; zamansal
-    olarak art arda alinmis olcumler gibi yorumlanmamalidir.
+    ``mean`` and ``worst`` values are summary measurements of the same sample;
+    they should not be interpreted as consecutive time-series observations.
     """
     print("\n" + "=" * 70)
-    print("6. OZNITELIK MUHENDISLIGI")
+    print("6. FEATURE ENGINEERING")
     print("=" * 70)
 
     eps = 1e-10
@@ -62,5 +62,5 @@ def engineer_features(df):
     )
     print("  + worst_minus_mean_compactness = worst compactness - mean compactness")
 
-    print(f"\nOznitelik muhendisligi sonrasi veri seti: {df_fe.shape[1]} sutun")
+    print(f"\nDataset after feature engineering: {df_fe.shape[1]} columns")
     return df_fe

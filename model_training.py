@@ -1,5 +1,5 @@
 """
-Model Eğitimi ve Hiperparametre Ayarlama
+Model Training and Hyperparameter Tuning
 """
 
 import pandas as pd
@@ -28,11 +28,11 @@ MODEL_TIE_BREAK_PRIORITY = {
 
 
 def compare_models(pipelines, X_train, y_train, X_val, y_val):
-    """Tum modelleri egitir ve validation setinde karsilastirir.
-    Secim metrigi: malignant F1-score, esitlikte recall ve acik tie-break.
+    """Trains all models and compares them on the validation set.
+    Selection metric: malignant F1-score, tie-breaking on recall and explicit priority.
     """
     print("\n" + "=" * 70)
-    print("11-12. MODEL EGITIMI VE VALIDATION KARSILASTIRMASI")
+    print("11-12. MODEL TRAINING AND VALIDATION COMPARISON")
     print("=" * 70)
 
     results = []
@@ -82,15 +82,15 @@ def compare_models(pipelines, X_train, y_train, X_val, y_val):
     results_df = results_df.reset_index(drop=True)
 
     print("\n" + "=" * 70)
-    print("VALIDATION KARSILASTIRMA TABLOSU")
+    print("VALIDATION COMPARISON TABLE")
     print("=" * 70)
     print(results_df.to_string(index=False))
 
     csv_path = OUTPUTS_DIR / "model_comparison.csv"
     results_df.to_csv(csv_path, index=False)
-    print(f"\n'outputs/model_comparison.csv' olarak kaydedildi.")
+    print(f"\nSaved as 'outputs/model_comparison.csv'.")
     print(
-        f"\nEn iyi model: {best_model_name} "
+        f"\nBest model: {best_model_name} "
         f"(F1-Score: {best_score_tuple[0]:.4f})"
     )
 
@@ -98,9 +98,9 @@ def compare_models(pipelines, X_train, y_train, X_val, y_val):
 
 
 def tune_hyperparameters(best_model_name, X_train, y_train):
-    """En iyi model icin GridSearchCV ile hiperparametre ayarlamasi yapar."""
+    """Performs hyperparameter tuning for the best model using GridSearchCV."""
     print("\n" + "=" * 70)
-    print("13. HIPERPARAMETRE AYARLAMA (GridSearchCV)")
+    print("13. HYPERPARAMETER TUNING (GridSearchCV)")
     print("=" * 70)
 
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
@@ -127,7 +127,7 @@ def tune_hyperparameters(best_model_name, X_train, y_train):
     }
 
     if best_model_name not in param_grids:
-        print(f"Uyari: {best_model_name} icin parametre izgarasi bulunamadi.")
+        print(f"Warning: No parameter grid found for {best_model_name}.")
         return None, {}
 
     if best_model_name == "Random Forest":
@@ -145,7 +145,7 @@ def tune_hyperparameters(best_model_name, X_train, y_train):
     ])
 
     param_grid = param_grids[best_model_name]
-    print(f"\n{best_model_name} icin parametre izgarasi:")
+    print(f"\nParameter grid for {best_model_name}:")
     for k, v in param_grid.items():
         print(f"  {k}: {v}")
 
@@ -159,8 +159,8 @@ def tune_hyperparameters(best_model_name, X_train, y_train):
     )
     grid_search.fit(X_train, y_train)
 
-    print(f"\nEn iyi capraz dogrulama F1-score: {grid_search.best_score_:.4f}")
-    print(f"En iyi parametreler:")
+    print(f"\nBest cross-validation F1-score: {grid_search.best_score_:.4f}")
+    print(f"Best parameters:")
     for k, v in grid_search.best_params_.items():
         print(f"  {k} = {v}")
 
@@ -168,15 +168,15 @@ def tune_hyperparameters(best_model_name, X_train, y_train):
 
 
 def train_final_model(best_model_name, best_params, X_train, X_val, y_train, y_val):
-    """En iyi hiperparametrelerle modeli train+validation uzerinde egitir."""
+    """Trains the final model on train+validation using the best hyperparameters."""
     print("\n" + "=" * 70)
-    print("14. FINAL MODEL EGITIMI (Train + Validation)")
+    print("14. FINAL MODEL TRAINING (Train + Validation)")
     print("=" * 70)
 
     X_train_final = pd.concat([X_train, X_val], ignore_index=True)
     y_train_final = pd.concat([y_train, y_val], ignore_index=True)
 
-    print(f"Train + Validation birlestirildi: {X_train_final.shape[0]} satir")
+    print(f"Train + Validation combined: {X_train_final.shape[0]} rows")
 
     if best_model_name == "Random Forest":
         preprocessor = build_unscaled_preprocessor()
@@ -199,6 +199,6 @@ def train_final_model(best_model_name, best_params, X_train, X_val, y_train, y_v
         pipeline.set_params(**best_params)
 
     pipeline.fit(X_train_final, y_train_final)
-    print("Final model egitildi.")
+    print("Final model trained.")
 
     return pipeline

@@ -1,5 +1,5 @@
 """
-Özel Sklearn Transformer'lar
+Custom Scikit-Learn Transformers
 """
 
 import numpy as np
@@ -9,10 +9,10 @@ from sklearn.utils.validation import check_is_fitted
 
 
 class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
-    """mean radius ozniteligini quantile-based kategorilere donusturur.
+    """Transforms the mean radius feature into quantile-based categories.
 
-    fit(): X_train uzerindeki mean radius degerlerinden qcut bin sinirlarini ogrenir.
-    transform(): Ogrenilen sinirlari kullanarak radius_category sutununu ekler.
+    fit(): Learns qcut bin edges from mean radius values in X_train.
+    transform(): Adds the radius_category column using the learned bin edges.
     """
 
     def __init__(self, source_column="mean radius", target_column="radius_category", n_bins=3):
@@ -24,8 +24,8 @@ class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
         values = self._validated_source_values(X)
         if self.n_bins != 3:
             raise ValueError(
-                "RadiusCategoryTransformer yalnizca n_bins=3 degerini "
-                "destekler; kategoriler: small, medium, large."
+                "RadiusCategoryTransformer only supports n_bins=3; "
+                "categories: small, medium, large."
             )
 
         usable_values = values[~np.isnan(values)]
@@ -44,15 +44,14 @@ class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
                 )
         except (ValueError, IndexError) as exc:
             raise ValueError(
-                f"'{self.source_column}' sutunu icin kategori sinirlari "
-                "olusturulamadi."
+                f"Could not create category bins for column '{self.source_column}'."
             ) from exc
 
         bin_edges = np.asarray(bin_edges, dtype=float)
         if len(bin_edges) != self.n_bins + 1 or np.any(np.diff(bin_edges) <= 0):
             raise ValueError(
-                f"'{self.source_column}' sutunu icin {self.n_bins} gecerli "
-                "kategori araligi olusturulamadi."
+                f"Could not create {self.n_bins} valid category bins for column "
+                f"'{self.source_column}'."
             )
         bin_edges[0] = -np.inf
         bin_edges[-1] = np.inf
@@ -77,20 +76,20 @@ class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
 
     def _validated_source_values(self, X):
         if not isinstance(X, pd.DataFrame):
-            raise TypeError("RadiusCategoryTransformer girdisi bir pandas DataFrame olmalidir.")
+            raise TypeError("RadiusCategoryTransformer input must be a pandas DataFrame.")
         if self.source_column not in X.columns:
-            raise ValueError(f"Kaynak sutun bulunamadi: '{self.source_column}'.")
+            raise ValueError(f"Source column not found: '{self.source_column}'.")
 
         source = X[self.source_column]
         if not pd.api.types.is_numeric_dtype(source.dtype):
-            raise TypeError(f"'{self.source_column}' sutunu sayisal olmalidir.")
+            raise TypeError(f"Column '{self.source_column}' must be numeric.")
 
         values = source.to_numpy(dtype=float, na_value=np.nan)
         if np.isinf(values).any():
-            raise ValueError(f"'{self.source_column}' sutunu sonsuz deger iceremez.")
+            raise ValueError(f"Column '{self.source_column}' cannot contain infinite values.")
         if np.isnan(values).all():
             raise ValueError(
-                f"'{self.source_column}' sutunu en az bir kullanilabilir sayisal deger icermelidir."
+                f"Column '{self.source_column}' must contain at least one usable numeric value."
             )
         return values
 
@@ -103,10 +102,10 @@ class RadiusCategoryTransformer(BaseEstimator, TransformerMixin):
 
 
 class OutlierCapper(BaseEstimator, TransformerMixin):
-    """IQR tabanli aykiri deger sinirlandirmasi (capping).
+    """IQR-based outlier capping.
 
-    fit(): Train verisinden Q1, Q3 ve IQR hesaplar.
-    transform(): Degerleri alt ve ust sinirlara clip eder.
+    fit(): Computes Q1, Q3, and IQR from train data.
+    transform(): Clips values to lower and upper bounds.
     """
 
     def __init__(self, factor=1.5):
