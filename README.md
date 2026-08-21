@@ -1,4 +1,4 @@
-# Breast Cancer Wisconsin Machine Learning Classification - Machine Learning Final Project
+# Breast Cancer Machine Learning Classification Via Wisconsin Data
 
 ## Project Purpose
 
