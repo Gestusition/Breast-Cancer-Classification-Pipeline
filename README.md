@@ -1,5 +1,10 @@
 # Breast Cancer Machine Learning Classification Via Wisconsin Data
 
+[![CI](https://github.com/Gestusition/Machine-Learning-Final-Odevi/actions/workflows/ci.yml/badge.svg)](https://github.com/Gestusition/Machine-Learning-Final-Odevi/actions/workflows/ci.yml)
+[![Code Quality](https://github.com/Gestusition/Machine-Learning-Final-Odevi/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Gestusition/Machine-Learning-Final-Odevi/actions/workflows/code-quality.yml)
+[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ## Project Purpose
 
 This project implements an end-to-end machine learning pipeline on the **Breast Cancer Wisconsin** dataset. The objective is to perform exploratory data analysis (EDA), data preprocessing, feature engineering, model training, model comparison, cross-validation, hyperparameter tuning, model evaluation, and result interpretation within a clean, robust, and well-structured Python project.
@@ -26,6 +31,7 @@ This project implements an end-to-end machine learning pipeline on the **Breast 
 ```bash
 pip install -r requirements.txt
 python main.py
+python -m unittest discover -s tests -v
 ```
 
 ### Verified Runtime Environment
