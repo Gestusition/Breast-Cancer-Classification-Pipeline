@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Gestusition/Breast-Cancer-Classification-Pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/Gestusition/Breast-Cancer-Classification-Pipeline/actions/workflows/ci.yml)
 [![Code Quality](https://github.com/Gestusition/Breast-Cancer-Classification-Pipeline/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Gestusition/Breast-Cancer-Classification-Pipeline/actions/workflows/code-quality.yml)
-[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Project Purpose
